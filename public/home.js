@@ -39,6 +39,7 @@ async function authorizedFetch(url, options = {}) {
         try {
             localStorage.removeItem(LS_ACCESS_TOKEN_KEY);
         } catch {
+            // ignore
         }
         window.location.href = 'login.html';
         throw new Error('Не авторизован');
@@ -46,29 +47,7 @@ async function authorizedFetch(url, options = {}) {
     return res;
 }
 
-async function getProductImageUrl(productId) {
-    const token = getToken();
-    if (!token) {
-        return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3C/svg%3E';
-    }
-
-    try {
-        const res = await authorizedFetch(
-            `${API_PRODUCTS_BASE}/${encodeURIComponent(productId)}/image`
-        );
-
-        if (!res.ok) {
-            throw new Error('Failed to fetch image');
-        }
-
-        const blob = await res.blob();
-        return URL.createObjectURL(blob);
-    } catch (error) {
-        console.error('Error loading image:', error);
-        return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3C/svg%3E';
-    }
-}
-
+// Toast
 let toastTimeout;
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
@@ -85,6 +64,7 @@ function showToast(message, type = 'success') {
     }, 2500);
 }
 
+// Favorites
 function loadFavorites() {
     try {
         const raw = localStorage.getItem(LS_FAVORITES_KEY);
@@ -103,6 +83,7 @@ function saveFavorites() {
     try {
         localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify([...favoritesSet]));
     } catch {
+        // ignore
     }
 }
 
@@ -119,6 +100,23 @@ function toggleFavorite(id) {
     saveFavorites();
 }
 
+// Load product image with JWT
+async function loadProductImage(productId, imgElement) {
+    if (!imgElement) return;
+    try {
+        const res = await authorizedFetch(
+            `${API_PRODUCTS_BASE}/${encodeURIComponent(productId)}/image`
+        );
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        imgElement.src = objectUrl;
+    } catch (e) {
+        console.error('Ошибка загрузки изображения товара', e);
+    }
+}
+
+// API
 async function fetchTop10() {
     const res = await authorizedFetch(`${API_PRODUCTS_BASE}/top_10`);
     if (!res.ok) {
@@ -156,6 +154,7 @@ async function filterProducts(filters) {
     return res.json();
 }
 
+// Render helpers
 const CATEGORY_LABELS = {
     ELECTRONICS: 'Электроника',
     CLOTHING: 'Одежда',
@@ -202,7 +201,7 @@ function renderGridSkeletons() {
     }
 }
 
-async function renderProductsGrid(products) {
+function renderProductsGrid(products) {
     const grid = document.getElementById('productsGrid');
     const status = document.getElementById('productsStatus');
     if (!grid) return;
@@ -215,30 +214,24 @@ async function renderProductsGrid(products) {
 
     if (status) status.textContent = `Найдено товаров: ${products.length}`;
 
-    for (const p of products) {
+    products.forEach((p) => {
         const card = document.createElement('article');
         card.className = 'product-card';
-        card.style.cursor = 'pointer';
 
         const imgWrap = document.createElement('div');
         imgWrap.className = 'product-image-wrapper';
         const img = document.createElement('img');
         img.className = 'product-image';
         img.alt = p.name || 'product image';
-
-        getProductImageUrl(p.id).then(url => {
-            img.src = url;
-        });
-
         imgWrap.appendChild(img);
+        loadProductImage(p.id, img);
 
         const favBtn = document.createElement('button');
         favBtn.className = 'fav-btn';
         if (isFavorite(p.id)) favBtn.classList.add('active');
         favBtn.innerHTML =
             '<svg class="fav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.001 4.529c2.349-2.532 6.379-2.532 8.727 0 2.348 2.531 2.348 6.643 0 9.174l-6.939 7.483a1.25 1.25 0 0 1-1.776 0l-6.94-7.483c-2.347-2.531-2.347-6.643 0-9.174 2.35-2.532 6.38-2.532 8.728 0z"/></svg>';
-        favBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+        favBtn.addEventListener('click', () => {
             toggleFavorite(p.id);
             favBtn.classList.toggle('active', isFavorite(p.id));
         });
@@ -272,40 +265,21 @@ async function renderProductsGrid(products) {
         rating.innerHTML = `★ <span>${ratingValue}</span>`;
         extra.append(rating);
 
-        const addToCartBtn = document.createElement('button');
-        addToCartBtn.className = 'add-to-cart-btn';
-        addToCartBtn.textContent = 'В корзину';
-        addToCartBtn.addEventListener('click', async () => {
-            if (window.cartModule && window.cartModule.addToCart) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.classList.add('adding');
-                try {
-                    await window.cartModule.addToCart(p.id, 1);
-                    // Animation feedback
-                    setTimeout(() => {
-                        addToCartBtn.classList.remove('adding');
-                        addToCartBtn.disabled = false;
-                    }, 500);
-                } catch (err) {
-                    addToCartBtn.classList.remove('adding');
-                    addToCartBtn.disabled = false;
-                }
-            }
-        });
-
-        body.append(title, cat, meta, extra, addToCartBtn);
+        body.append(title, cat, meta, extra);
 
         card.append(imgWrap, favBtn, body);
 
-        card.addEventListener('click', () => {
+        // Клик на карточку (кроме кнопки избранного)
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.fav-btn')) return;
             window.location.href = `product.html?id=${p.id}`;
         });
 
         grid.appendChild(card);
-    }
+    });
 }
 
-async function renderTopProducts(products) {
+function renderTopProducts(products) {
     const container = document.getElementById('topProductsContainer');
     if (!container) return;
     container.innerHTML = '';
@@ -318,22 +292,17 @@ async function renderTopProducts(products) {
         return;
     }
 
-    for (const p of products) {
+    products.forEach((p) => {
         const card = document.createElement('article');
         card.className = 'hero-card';
-        card.style.cursor = 'pointer';
 
         const imgWrap = document.createElement('div');
         imgWrap.className = 'product-image-wrapper';
         const img = document.createElement('img');
         img.className = 'product-image';
         img.alt = p.name || 'product image';
-
-        getProductImageUrl(p.id).then(url => {
-            img.src = url;
-        });
-
         imgWrap.appendChild(img);
+        loadProductImage(p.id, img);
 
         const body = document.createElement('div');
         body.className = 'product-body';
@@ -352,29 +321,7 @@ async function renderTopProducts(products) {
         rating.innerHTML = `★ <span>${ratingValue}</span>`;
         meta.append(price, rating);
 
-        const addToCartBtn = document.createElement('button');
-        addToCartBtn.className = 'add-to-cart-btn';
-        addToCartBtn.textContent = 'В корзину';
-        addToCartBtn.style.marginTop = '8px';
-        addToCartBtn.style.width = '100%';
-        addToCartBtn.addEventListener('click', async () => {
-            if (window.cartModule && window.cartModule.addToCart) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.classList.add('adding');
-                try {
-                    await window.cartModule.addToCart(p.id, 1);
-                    setTimeout(() => {
-                        addToCartBtn.classList.remove('adding');
-                        addToCartBtn.disabled = false;
-                    }, 500);
-                } catch (err) {
-                    addToCartBtn.classList.remove('adding');
-                    addToCartBtn.disabled = false;
-                }
-            }
-        });
-
-        body.append(title, meta, addToCartBtn);
+        body.append(title, meta);
 
         card.append(imgWrap, body);
 
@@ -383,9 +330,10 @@ async function renderTopProducts(products) {
         });
 
         container.appendChild(card);
-    }
+    });
 }
 
+// Event handlers
 function initSearch() {
     const input = document.getElementById('searchInput');
     if (!input) return;
@@ -397,12 +345,13 @@ function initSearch() {
         }
         searchDebounceId = setTimeout(async () => {
             if (!value) {
+                // если поиск пустой, можно просто не перетирать текущий список
                 return;
             }
             try {
                 renderGridSkeletons();
                 const products = await searchProducts(value);
-                await renderProductsGrid(products);
+                renderProductsGrid(products);
             } catch (e) {
                 console.error(e);
                 showToast('Ошибка поиска товаров', 'error');
@@ -428,7 +377,7 @@ function initCategories() {
             renderGridSkeletons();
             const filters = { category };
             const products = await filterProducts(filters);
-            await renderProductsGrid(products);
+            renderProductsGrid(products);
         } catch (err) {
             console.error(err);
             showToast('Ошибка загрузки товаров по категории', 'error');
@@ -446,14 +395,14 @@ function initFilters() {
         const ratingAbove = document.getElementById('filterRating').value.trim();
         const minPrice = document.getElementById('filterMinPrice').value.trim();
         const maxPrice = document.getElementById('filterMaxPrice').value.trim();
-        const category = document.getElementById('filterCategory')?.value.trim() || '';
+        const category = document.getElementById('filterCategory').value.trim();
 
         const filters = { ratingAbove, minPrice, maxPrice, category };
 
         try {
             renderGridSkeletons();
             const products = await filterProducts(filters);
-            await renderProductsGrid(products);
+            renderProductsGrid(products);
         } catch (err) {
             console.error(err);
             showToast('Ошибка применения фильтров', 'error');
@@ -485,6 +434,21 @@ function initNav() {
     profileBtn?.addEventListener('click', () => {
         window.location.href = 'profile.html';
     });
+
+    const cartBtn = document.querySelector('[data-nav="cart"]');
+    cartBtn?.addEventListener('click', () => {
+        window.location.href = 'cart.html';
+    });
+
+    const favoritesBtn = document.querySelector('[data-nav="favorites"]');
+    favoritesBtn?.addEventListener('click', () => {
+        showToast('Страница избранного в разработке');
+    });
+
+    const ordersBtn = document.querySelector('[data-nav="orders"]');
+    ordersBtn?.addEventListener('click', () => {
+        showToast('Страница заказов в разработке');
+    });
 }
 
 async function initPage() {
@@ -499,7 +463,7 @@ async function initPage() {
     try {
         renderTopSkeletons();
         const top = await fetchTop10();
-        await renderTopProducts(top);
+        renderTopProducts(top);
     } catch (e) {
         console.error(e);
         showToast('Не удалось загрузить популярные товары', 'error');
