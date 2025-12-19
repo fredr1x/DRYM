@@ -39,7 +39,6 @@ async function authorizedFetch(url, options = {}) {
         try {
             localStorage.removeItem(LS_ACCESS_TOKEN_KEY);
         } catch {
-            // ignore
         }
         window.location.href = 'login.html';
         throw new Error('Не авторизован');
@@ -47,7 +46,6 @@ async function authorizedFetch(url, options = {}) {
     return res;
 }
 
-// Функция для получения изображения с JWT токеном
 async function getProductImageUrl(productId) {
     const token = getToken();
     if (!token) {
@@ -71,7 +69,6 @@ async function getProductImageUrl(productId) {
     }
 }
 
-// Toast
 let toastTimeout;
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
@@ -88,7 +85,6 @@ function showToast(message, type = 'success') {
     }, 2500);
 }
 
-// Favorites
 function loadFavorites() {
     try {
         const raw = localStorage.getItem(LS_FAVORITES_KEY);
@@ -107,7 +103,6 @@ function saveFavorites() {
     try {
         localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify([...favoritesSet]));
     } catch {
-        // ignore
     }
 }
 
@@ -124,7 +119,6 @@ function toggleFavorite(id) {
     saveFavorites();
 }
 
-// API
 async function fetchTop10() {
     const res = await authorizedFetch(`${API_PRODUCTS_BASE}/top_10`);
     if (!res.ok) {
@@ -162,7 +156,6 @@ async function filterProducts(filters) {
     return res.json();
 }
 
-// Render helpers
 const CATEGORY_LABELS = {
     ELECTRONICS: 'Электроника',
     CLOTHING: 'Одежда',
@@ -225,6 +218,7 @@ async function renderProductsGrid(products) {
     for (const p of products) {
         const card = document.createElement('article');
         card.className = 'product-card';
+        card.style.cursor = 'pointer';
 
         const imgWrap = document.createElement('div');
         imgWrap.className = 'product-image-wrapper';
@@ -232,7 +226,6 @@ async function renderProductsGrid(products) {
         img.className = 'product-image';
         img.alt = p.name || 'product image';
 
-        // Загружаем изображение с JWT токеном
         getProductImageUrl(p.id).then(url => {
             img.src = url;
         });
@@ -244,7 +237,8 @@ async function renderProductsGrid(products) {
         if (isFavorite(p.id)) favBtn.classList.add('active');
         favBtn.innerHTML =
             '<svg class="fav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.001 4.529c2.349-2.532 6.379-2.532 8.727 0 2.348 2.531 2.348 6.643 0 9.174l-6.939 7.483a1.25 1.25 0 0 1-1.776 0l-6.94-7.483c-2.347-2.531-2.347-6.643 0-9.174 2.35-2.532 6.38-2.532 8.728 0z"/></svg>';
-        favBtn.addEventListener('click', () => {
+        favBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             toggleFavorite(p.id);
             favBtn.classList.toggle('active', isFavorite(p.id));
         });
@@ -281,6 +275,11 @@ async function renderProductsGrid(products) {
         body.append(title, cat, meta, extra);
 
         card.append(imgWrap, favBtn, body);
+
+        card.addEventListener('click', () => {
+            window.location.href = `product.html?id=${p.id}`;
+        });
+
         grid.appendChild(card);
     }
 }
@@ -301,6 +300,7 @@ async function renderTopProducts(products) {
     for (const p of products) {
         const card = document.createElement('article');
         card.className = 'hero-card';
+        card.style.cursor = 'pointer';
 
         const imgWrap = document.createElement('div');
         imgWrap.className = 'product-image-wrapper';
@@ -308,7 +308,6 @@ async function renderTopProducts(products) {
         img.className = 'product-image';
         img.alt = p.name || 'product image';
 
-        // Загружаем изображение с JWT токеном
         getProductImageUrl(p.id).then(url => {
             img.src = url;
         });
@@ -335,11 +334,15 @@ async function renderTopProducts(products) {
         body.append(title, meta);
 
         card.append(imgWrap, body);
+
+        card.addEventListener('click', () => {
+            window.location.href = `product.html?id=${p.id}`;
+        });
+
         container.appendChild(card);
     }
 }
 
-// Event handlers
 function initSearch() {
     const input = document.getElementById('searchInput');
     if (!input) return;
@@ -351,7 +354,6 @@ function initSearch() {
         }
         searchDebounceId = setTimeout(async () => {
             if (!value) {
-                // если поиск пустой, можно просто не перетирать текущий список
                 return;
             }
             try {
@@ -401,7 +403,7 @@ function initFilters() {
         const ratingAbove = document.getElementById('filterRating').value.trim();
         const minPrice = document.getElementById('filterMinPrice').value.trim();
         const maxPrice = document.getElementById('filterMaxPrice').value.trim();
-        const category = document.getElementById('filterCategory').value.trim();
+        const category = document.getElementById('filterCategory')?.value.trim() || '';
 
         const filters = { ratingAbove, minPrice, maxPrice, category };
 

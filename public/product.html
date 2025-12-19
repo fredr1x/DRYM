@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Маркетплейс | Товар</title>
+    <link rel="icon" href="resources/dreamfactory-svgrepo-com%20(1).svg" type="image/svg+xml">
+    <link rel="stylesheet" href="product.css" />
+</head>
+<body>
+<header class="product-header">
+    <div class="header-inner">
+        <button id="backBtn" class="back-btn" aria-label="Назад">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Назад</span>
+        </button>
+
+        <a href="home.html" class="brand">
+            <img
+                    src="resources/dreamfactory-svgrepo-com%20(1).svg"
+                    alt="Logo"
+                    width="32"
+                    height="32"
+            />
+            <span class="brand-text">Online Shopping</span>
+        </a>
+    </div>
+</header>
+
+<main class="product-page">
+    <div id="productContainer" class="product-container">
+        <div class="product-skeleton">
+            <div class="skeleton-image"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-category"></div>
+                <div class="skeleton-line skeleton-text"></div>
+                <div class="skeleton-line skeleton-text"></div>
+                <div class="skeleton-line skeleton-price"></div>
+            </div>
+        </div>
+    </div>
+
+    <section id="reviewsSection" class="reviews-section hidden">
+        <div class="reviews-header">
+            <h2>Отзывы</h2>
+            <div id="reviewsOverview" class="reviews-overview"></div>
+        </div>
+
+        <div id="reviewsList" class="reviews-list"></div>
+
+        <div class="review-form-wrapper">
+            <h3>Оставить отзыв</h3>
+            <form id="reviewForm" class="review-form">
+                <div class="rating-input">
+                    <label>Ваша оценка</label>
+                    <div class="stars-input" id="starsInput">
+                        <button type="button" class="star-btn" data-rating="1">★</button>
+                        <button type="button" class="star-btn" data-rating="2">★</button>
+                        <button type="button" class="star-btn" data-rating="3">★</button>
+                        <button type="button" class="star-btn" data-rating="4">★</button>
+                        <button type="button" class="star-btn" data-rating="5">★</button>
+                    </div>
+                    <input type="hidden" id="ratingValue" name="rating" required />
+                </div>
+
+                <div class="form-field">
+                    <label for="reviewComment">Комментарий</label>
+                    <textarea
+                            id="reviewComment"
+                            name="comment"
+                            rows="4"
+                            placeholder="Поделитесь впечатлениями о товаре..."
+                            required
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn primary">Отправить отзыв</button>
+            </form>
+        </div>
+    </section>
+</main>
+
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<script src="product.js"></script>
+</body>
+</html>
