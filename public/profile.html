@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Профиль | DRYM</title>
-    <link rel="icon" href="resources/dreamfactory-svgrepo-com%20(1).svg" type="image/svg+xml">
+    <title>Профиль | Online Shop</title>
     <link rel="stylesheet" href="profile.css" />
+    <!-- jQuery CDN -->
     <script
             src="https://code.jquery.com/jquery-3.7.1.min.js"
             integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
@@ -17,20 +17,16 @@
 <header class="app-header">
     <div class="header-inner">
         <a href="home.html" class="brand">
-            <img
-                    src="resources/dreamfactory-svgrepo-com%20(1).svg"
-                    alt="Logo"
-                    width="40"
-                    height="40"
-            />
-            <span class="brand-text">DRYM</span>
+            <span class="brand-logo">OS</span>
+            <span class="brand-text">Online Shopping</span>
         </a>
 
         <nav class="nav-links">
-            <a href="#" class="nav-link">Моя корзина</a>
+            <a href="cart.html" class="nav-link">Моя корзина</a>
             <a href="#" class="nav-link">Мои заказы</a>
-            <a href="#" class="nav-link">Избранные</a>
-            <a href="#" class="nav-link nav-link-active">Профиль</a>
+            <a href="home.html" class="nav-link">Товары</a>
+            <a href="#" class="nav-link">Wish List</a>
+            <a href="profile.html" class="nav-link nav-link-active">Профиль</a>
         </nav>
 
         <button class="nav-toggle" aria-label="Открыть меню">
@@ -63,10 +59,11 @@
                     <span class="balance-label">Баланс</span>
                     <div class="balance-value">
                         <span id="balance">0.00</span>
-                        <span class="balance-currency">₸</span>
+                        <span class="balance-currency">₽</span>
                     </div>
+                    <small class="balance-note">* демо-данные, для примера</small>
                 </div>
-                <button id="rechargeBtn" class="btn">Пополнить</button>
+                <button id="rechargeBtn" class="btn primary">Пополнить</button>
             </div>
 
             <div class="profile-actions">
@@ -156,7 +153,7 @@
         </div>
         <form id="rechargeForm" class="modal-body">
             <div class="field">
-                <label for="rechargeAmount">Сумма пополнения (₸)</label>
+                <label for="rechargeAmount">Сумма пополнения (₽)</label>
                 <input
                         type="number"
                         id="rechargeAmount"

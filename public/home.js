@@ -375,7 +375,10 @@ function initCategories() {
 
         try {
             renderGridSkeletons();
-            const filters = { category };
+            const filters = {};
+            if (category) {
+                filters.category = category;
+            }
             const products = await filterProducts(filters);
             renderProductsGrid(products);
         } catch (err) {

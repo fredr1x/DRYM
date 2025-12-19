@@ -1,6 +1,6 @@
 :root {
-    --primary: hsl(200, 50%, 50%);
-    --primary-dark: hsl(200, 50%, 35%);
+    --primary: hsl(220, 50%, 50%);
+    --primary-dark: hsl(230, 50%, 35%);
     --bg: hsl(210, 20%, 98%);
     --text-main: hsl(210, 15%, 16%);
     --text-muted: hsl(210, 9%, 46%);
