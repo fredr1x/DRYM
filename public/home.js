@@ -278,7 +278,28 @@ async function renderProductsGrid(products) {
         rating.innerHTML = `★ <span>${ratingValue}</span>`;
         extra.append(rating);
 
-        body.append(title, cat, meta, extra);
+        const addToCartBtn = document.createElement('button');
+        addToCartBtn.className = 'add-to-cart-btn';
+        addToCartBtn.textContent = 'В корзину';
+        addToCartBtn.addEventListener('click', async () => {
+            if (window.cartModule && window.cartModule.addToCart) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.classList.add('adding');
+                try {
+                    await window.cartModule.addToCart(p.id, 1);
+                    // Animation feedback
+                    setTimeout(() => {
+                        addToCartBtn.classList.remove('adding');
+                        addToCartBtn.disabled = false;
+                    }, 500);
+                } catch (err) {
+                    addToCartBtn.classList.remove('adding');
+                    addToCartBtn.disabled = false;
+                }
+            }
+        });
+
+        body.append(title, cat, meta, extra, addToCartBtn);
 
         card.append(imgWrap, favBtn, body);
         grid.appendChild(card);
@@ -332,7 +353,29 @@ async function renderTopProducts(products) {
         rating.innerHTML = `★ <span>${ratingValue}</span>`;
         meta.append(price, rating);
 
-        body.append(title, meta);
+        const addToCartBtn = document.createElement('button');
+        addToCartBtn.className = 'add-to-cart-btn';
+        addToCartBtn.textContent = 'В корзину';
+        addToCartBtn.style.marginTop = '8px';
+        addToCartBtn.style.width = '100%';
+        addToCartBtn.addEventListener('click', async () => {
+            if (window.cartModule && window.cartModule.addToCart) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.classList.add('adding');
+                try {
+                    await window.cartModule.addToCart(p.id, 1);
+                    setTimeout(() => {
+                        addToCartBtn.classList.remove('adding');
+                        addToCartBtn.disabled = false;
+                    }, 500);
+                } catch (err) {
+                    addToCartBtn.classList.remove('adding');
+                    addToCartBtn.disabled = false;
+                }
+            }
+        });
+
+        body.append(title, meta, addToCartBtn);
 
         card.append(imgWrap, body);
         container.appendChild(card);
