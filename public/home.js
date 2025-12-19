@@ -1,4 +1,4 @@
-const API_PRODUCTS_BASE = 'http://localhost:8080/api/v1/products';
+const API_PRODUCTS_BASE = 'http://localhost:8081/api/v1/products';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
 const LS_FAVORITES_KEY = 'oss_favorites';
 
@@ -282,21 +282,7 @@ async function renderProductsGrid(products) {
         addToCartBtn.className = 'add-to-cart-btn';
         addToCartBtn.textContent = 'В корзину';
         addToCartBtn.addEventListener('click', async () => {
-            if (window.cartModule && window.cartModule.addToCart) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.classList.add('adding');
-                try {
-                    await window.cartModule.addToCart(p.id, 1);
-                    // Animation feedback
-                    setTimeout(() => {
-                        addToCartBtn.classList.remove('adding');
-                        addToCartBtn.disabled = false;
-                    }, 500);
-                } catch (err) {
-                    addToCartBtn.classList.remove('adding');
-                    addToCartBtn.disabled = false;
-                }
-            }
+            await addProductToCart(p.id);
         });
 
         body.append(title, cat, meta, extra, addToCartBtn);
@@ -359,20 +345,7 @@ async function renderTopProducts(products) {
         addToCartBtn.style.marginTop = '8px';
         addToCartBtn.style.width = '100%';
         addToCartBtn.addEventListener('click', async () => {
-            if (window.cartModule && window.cartModule.addToCart) {
-                addToCartBtn.disabled = true;
-                addToCartBtn.classList.add('adding');
-                try {
-                    await window.cartModule.addToCart(p.id, 1);
-                    setTimeout(() => {
-                        addToCartBtn.classList.remove('adding');
-                        addToCartBtn.disabled = false;
-                    }, 500);
-                } catch (err) {
-                    addToCartBtn.classList.remove('adding');
-                    addToCartBtn.disabled = false;
-                }
-            }
+            await addProductToCart(p.id);
         });
 
         body.append(title, meta, addToCartBtn);
@@ -483,6 +456,102 @@ function initNav() {
     profileBtn?.addEventListener('click', () => {
         window.location.href = 'profile.html';
     });
+
+    const cartBtn = document.getElementById('cartNavBtn');
+    cartBtn?.addEventListener('click', () => {
+        window.location.href = 'cart.html';
+    });
+}
+
+// Simple function to add product to cart
+async function addProductToCart(productId) {
+    const API_CART_BASE = 'http://localhost:8081/api/v1/carts';
+    const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
+    const LS_PROFILE_KEY = 'oss_profile_user';
+    const DEFAULT_USER_ID = 1;
+
+    function getUserId() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(LS_PROFILE_KEY));
+            if (stored && stored.id) return stored.id;
+        } catch {
+            // ignore
+        }
+        return DEFAULT_USER_ID;
+    }
+
+    function getToken() {
+        try {
+            return localStorage.getItem(LS_ACCESS_TOKEN_KEY);
+        } catch {
+            return null;
+        }
+    }
+
+    function getAuthHeaders() {
+        const token = getToken();
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+        return headers;
+    }
+
+    const userId = getUserId();
+    if (!userId) {
+        showToast('Необходимо войти в систему', 'error');
+        return;
+    }
+
+    try {
+        // Get cart first
+        let cartData;
+        try {
+            const cartRes = await fetch(`${API_CART_BASE}/${encodeURIComponent(userId)}`, {
+                headers: getAuthHeaders(),
+            });
+            if (cartRes.ok) {
+                cartData = await cartRes.json();
+            }
+        } catch {
+            // Cart might not exist yet
+        }
+
+        const cartId = cartData?.id || 0;
+
+        const itemData = {
+            id: 0,
+            quantity: 1,
+            user_id: userId,
+            cart_id: cartId,
+            product_id: productId,
+        };
+
+        const res = await fetch(`${API_CART_BASE}/add_item`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(itemData),
+        });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                try {
+                    localStorage.removeItem(LS_ACCESS_TOKEN_KEY);
+                } catch {
+                    // ignore
+                }
+                window.location.href = 'login.html';
+                return;
+            }
+            const errorText = await res.text().catch(() => 'Не удалось добавить товар в корзину');
+            throw new Error(errorText || 'Не удалось добавить товар в корзину');
+        }
+
+        showToast('Товар добавлен в корзину');
+    } catch (err) {
+        console.error('Error adding to cart:', err);
+        showToast(err.message || 'Ошибка добавления товара', 'error');
+    }
 }
 
 async function initPage() {
