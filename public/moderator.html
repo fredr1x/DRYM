@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Модератор — Управление товарами</title>
+    <link rel="icon" href="/resources/favicon.ico" type="image/png">
+    <link rel="stylesheet" href="moderator.css" />
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <span class="brand-logo">OS</span>
+            <div class="brand-texts">
+                <span class="brand-title">Online Shopping</span>
+                <span class="brand-subtitle">Панель модератора</span>
+            </div>
+        </div>
+        <div class="topbar-actions">
+            <button id="logoutBtn" class="btn ghost">Выйти</button>
+        </div>
+    </div>
+</header>
+
+<main class="layout">
+    <aside class="sidebar">
+        <h2 class="sidebar-title">Категории</h2>
+        <nav class="category-list" id="categoryList">
+            <button class="category-btn active" data-category="ELECTRONICS">
+                Электроника
+            </button>
+            <button class="category-btn" data-category="CLOTHING">
+                Одежда
+            </button>
+            <button class="category-btn" data-category="FOOD">Еда</button>
+            <button class="category-btn" data-category="BOOKS">Книги</button>
+            <button class="category-btn" data-category="HOME">Дом</button>
+            <button class="category-btn" data-category="HEALTH">Здоровье</button>
+            <button class="category-btn" data-category="SPORT">Спорт</button>
+            <button class="category-btn" data-category="OFFICE">Офис</button>
+            <button class="category-btn" data-category="OTHER">Другое</button>
+        </nav>
+    </aside>
+
+    <section class="content">
+        <header class="content-header">
+            <div>
+                <h1 id="currentCategoryTitle">Электроника</h1>
+                <p class="muted">Управление товарами в выбранной категории.</p>
+            </div>
+            <button id="addProductBtn" class="btn primary">
+                Добавить товар
+            </button>
+        </header>
+
+        <section id="productsContainer" class="products-grid">
+            <!-- Карточки товаров будут добавляться из JS -->
+        </section>
+
+        <div id="emptyState" class="empty-state" hidden>
+            <p>В этой категории пока нет товаров.</p>
+            <button id="emptyAddBtn" class="btn ghost">
+                Добавить первый товар
+            </button>
+        </div>
+    </section>
+</main>
+
+<!-- Backdrop -->
+<div id="modalBackdrop" class="modal-backdrop" hidden></div>
+
+<!-- Product Modal -->
+<div id="productModal" class="modal" hidden aria-hidden="true">
+    <div class="modal-dialog">
+        <header class="modal-header">
+            <h2 id="modalTitle">Добавить товар</h2>
+            <button class="modal-close" id="modalCloseBtn" aria-label="Закрыть">
+                &times;
+            </button>
+        </header>
+        <form id="productForm" class="modal-body" enctype="multipart/form-data">
+            <input type="hidden" id="productId" name="id" />
+
+            <div class="field image-preview-field" id="imagePreviewField" hidden>
+                <label>Текущее изображение</label>
+                <div class="modal-image-preview">
+              <span
+                      id="productImagePreviewMessage"
+                      class="image-preview-message"
+              >
+                Фото еще нет
+              </span>
+                    <img
+                            id="productImagePreview"
+                            alt="Изображение товара"
+                            loading="lazy"
+                            hidden
+                    />
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="productName">Название</label>
+                <input type="text" id="productName" name="name" required />
+            </div>
+
+            <div class="field">
+                <label for="productDescription">Описание</label>
+                <textarea
+                        id="productDescription"
+                        name="description"
+                        rows="3"
+                        required
+                ></textarea>
+            </div>
+
+            <div class="field two-column">
+                <div>
+                    <label for="productPrice">Цена</label>
+                    <input
+                            type="number"
+                            id="productPrice"
+                            name="price"
+                            min="0"
+                            step="0.01"
+                            required
+                    />
+                </div>
+                <div>
+                    <label for="productStock">Количество</label>
+                    <input
+                            type="number"
+                            id="productStock"
+                            name="stock"
+                            min="0"
+                            step="1"
+                            required
+                    />
+                </div>
+            </div>
+
+            <div class="field two-column">
+                <div>
+                    <label for="productCategory">Категория</label>
+                    <select id="productCategory" name="category" required>
+                        <option value="ELECTRONICS">Электроника</option>
+                        <option value="CLOTHING">Одежда</option>
+                        <option value="FOOD">Еда</option>
+                        <option value="BOOKS">Книги</option>
+                        <option value="HOME">Дом</option>
+                        <option value="HEALTH">Здоровье</option>
+                        <option value="SPORT">Спорт</option>
+                        <option value="OFFICE">Офис</option>
+                        <option value="OTHER">Другое</option>
+                    </select>
+                </div>
+                <div id="imageFieldWrapper" class="file-field">
+                    <label for="productImage">Изображение</label>
+                    <div class="file-input-wrapper">
+                        <input
+                                type="file"
+                                id="productImage"
+                                name="image"
+                                accept="image/*"
+                        />
+                        <button
+                                type="button"
+                                class="btn ghost file-btn"
+                                id="productImageBtn"
+                        >
+                            Выбрать файл
+                        </button>
+                        <span class="file-name" id="productImageName">
+                  Файл не выбран
+                </span>
+                    </div>
+                </div>
+            </div>
+
+            <p id="modalError" class="form-error"></p>
+
+            <footer class="modal-footer">
+                <button type="button" class="btn ghost" id="modalCancelBtn">
+                    Отмена
+                </button>
+                <button type="submit" class="btn primary" id="modalSaveBtn">
+                    Сохранить
+                </button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<script src="moderator.js"></script>
+</body>
+</html>

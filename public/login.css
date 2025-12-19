@@ -1,0 +1,209 @@
+:root {
+    --primary: hsl(200, 50%, 50%);
+    --primary-dark: hsl(200, 50%, 35%);
+    --bg: hsl(210, 20%, 98%);
+    --text-main: hsl(210, 15%, 20%);
+    --text-muted: hsl(210, 10%, 45%);
+    --danger: hsl(0, 70%, 55%);
+    --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+    --transition-normal: 0.25s ease;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top left, #e3f2fd 0, var(--bg) 45%);
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input {
+    font-family: inherit;
+}
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    padding: 20px 20px 18px;
+}
+
+.auth-header {
+    margin-bottom: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: radial-gradient(circle at 20% 0, #fff, var(--primary));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.3);
+}
+
+.brand-texts {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.brand-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.auth-form {
+    margin-top: 10px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.field label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.field input {
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.7);
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    outline: none;
+    background: rgba(248, 250, 252, 0.95);
+    transition: border-color var(--transition-normal),
+    box-shadow var(--transition-normal), background var(--transition-normal);
+}
+
+.field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px hsla(200, 50%, 50%, 0.2);
+    background: #fff;
+}
+
+.form-error {
+    min-height: 18px;
+    font-size: 0.8rem;
+    color: var(--danger);
+    margin: 4px 0 8px;
+}
+
+.btn {
+    --btn-bg: #f3f4f6;
+    --btn-color: var(--text-main);
+    --btn-border: transparent;
+    --btn-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-normal),
+    box-shadow var(--transition-normal), transform 0.12s ease,
+    border-color var(--transition-normal), color var(--transition-normal);
+    box-shadow: var(--btn-shadow);
+}
+
+.btn.primary {
+    --btn-bg: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    --btn-color: #f9fafb;
+    --btn-border: transparent;
+    --btn-shadow: 0 14px 28px rgba(15, 23, 42, 0.28);
+}
+
+.btn.full-width {
+    width: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+}
+
+.auth-footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.link-primary {
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+
+.link-primary:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding-inline: 16px;
+    }
+}
