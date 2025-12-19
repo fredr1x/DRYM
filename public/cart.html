@@ -3,73 +3,93 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Корзина | Online Shop</title>
-    <link rel="icon" href="/resources/favicon.ico" type="image/x-icon">
+    <title>Корзина | DRYM</title>
+    <link rel="icon" href="resources/dreamfactory-svgrepo-com%20(1).svg" type="image/svg+xml">
     <link rel="stylesheet" href="cart.css" />
 </head>
 <body>
-<header class="app-header">
+<header class="cart-header">
     <div class="header-inner">
         <a href="home.html" class="brand">
-            <img src="/resources/logo.png" alt="OS Logo" class="brand-logo-img">
-            <span class="brand-text">Online Shopping</span>
+            <img
+                    src="resources/dreamfactory-svgrepo-com%20(1).svg"
+                    alt="Logo"
+                    width="40"
+                    height="40"
+            />
+            <span class="brand-text">DRYM</span>
         </a>
 
-        <nav class="nav-links">
-            <a href="cart.html" class="nav-link nav-link-active">Корзина</a>
-            <a href="#" class="nav-link">Избранное</a>
-            <a href="#" class="nav-link">Мои заказы</a>
-            <a href="profile.html" class="nav-link nav-link-profile">Профиль</a>
+        <nav class="header-nav">
+            <a href="home.html" class="nav-link">Главная</a>
+            <a href="profile.html" class="nav-link">Профиль</a>
         </nav>
     </div>
 </header>
 
-<main class="page">
-    <section class="cart-section">
-        <div class="cart-header">
+<main class="cart-page">
+    <div class="cart-container">
+        <header class="cart-page-header">
             <h1>Корзина</h1>
-            <p class="muted">Товары, которые вы добавили в корзину</p>
+            <div id="cartBadge" class="cart-badge hidden">
+                <span id="totalItems">0</span> товаров
+            </div>
+        </header>
+
+        <!-- Skeleton loader -->
+        <div id="cartSkeleton" class="cart-skeleton">
+            <div class="skeleton-item">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-text"></div>
+                    <div class="skeleton-line skeleton-price"></div>
+                </div>
+            </div>
+            <div class="skeleton-item">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-content">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-text"></div>
+                    <div class="skeleton-line skeleton-price"></div>
+                </div>
+            </div>
         </div>
 
-        <div id="cartEmptyState" class="cart-empty-state" style="display: none;">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        <!-- Empty state -->
+        <div id="emptyCart" class="empty-cart hidden">
+            <svg class="empty-icon" viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9M9 22a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm10 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
             </svg>
-            <h3>Корзина пуста</h3>
-            <p>Добавьте товары, чтобы начать покупки</p>
+            <h2>Ваша корзина пуста</h2>
+            <p>Добавьте товары, чтобы оформить заказ</p>
             <a href="home.html" class="btn primary">Перейти к покупкам</a>
         </div>
 
-        <div class="cart-content" id="cartContent" style="display: none;">
-            <div class="cart-items-section">
-                <div id="cartItemsContainer" class="cart-items-container">
-                    <!-- Cart items will be rendered here -->
-                </div>
-            </div>
+        <!-- Cart items -->
+        <div id="cartItems" class="cart-items hidden"></div>
 
-            <aside class="cart-summary">
-                <div class="cart-summary-card">
-                    <h2>Итого</h2>
-                    <div class="cart-summary-row">
-                        <span>Товаров:</span>
-                        <span id="cartItemsCount">0</span>
-                    </div>
-                    <div class="cart-summary-row cart-summary-total">
-                        <span>Сумма:</span>
-                        <span id="cartTotal">0.00 ₸</span>
-                    </div>
-                    <button class="btn primary full-width" id="checkoutBtn">
-                        Оформить заказ
-                    </button>
-                </div>
-            </aside>
-        </div>
-    </section>
+        <!-- Cart summary -->
+        <aside id="cartSummary" class="cart-summary hidden">
+            <h2>Итого</h2>
+            <div class="summary-row">
+                <span>Товары</span>
+                <span id="summaryItemsCount">0 шт.</span>
+            </div>
+            <div class="summary-row total">
+                <span>Итоговая сумма</span>
+                <span id="summaryTotalPrice">0 ₸</span>
+            </div>
+            <button id="checkoutBtn" class="btn primary checkout-btn">
+                Оформить заказ
+            </button>
+        </aside>
+    </div>
 </main>
 
+<!-- Toast -->
 <div id="toast" class="toast" aria-live="polite"></div>
 
 <script src="cart.js"></script>
 </body>
 </html>
-

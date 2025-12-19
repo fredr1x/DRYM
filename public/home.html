@@ -17,7 +17,7 @@
                     width="40"
                     height="40"
             />
-            <span class="brand-text">Online Shopping</span>
+            <span class="brand-text">DRYM</span>
         </a>
 
         <div class="search-wrapper">
@@ -30,10 +30,16 @@
         </div>
 
         <nav class="nav-links">
-            <button class="nav-link" data-nav="cart" id="cartNavBtn">Корзина</button>
+            <button class="nav-link" data-nav="cart">Корзина</button>
             <button class="nav-link" data-nav="favorites">Избранное</button>
             <button class="nav-link" data-nav="orders">Мои заказы</button>
-            <button class="nav-link" data-nav="profile">Профиль</button>
+            <button
+                    class="nav-link nav-link-profile"
+                    data-nav="profile"
+                    id="profileNavBtn"
+            >
+                Профиль
+            </button>
         </nav>
     </div>
 </header>
@@ -45,6 +51,7 @@
             <p class="muted">Топ‑10 предложений, которые выбирают пользователи.</p>
         </div>
         <div id="topProductsContainer" class="hero-scroll">
+            <!-- skeletons / cards -->
         </div>
     </section>
 
@@ -84,6 +91,22 @@
                     </div>
                 </div>
 
+                <div class="field">
+                    <label for="filterCategory">Категория</label>
+                    <select id="filterCategory" name="category">
+                        <option value="">Все</option>
+                        <option value="ELECTRONICS">Электроника</option>
+                        <option value="CLOTHING">Одежда</option>
+                        <option value="FOOD">Еда</option>
+                        <option value="BOOKS">Книги</option>
+                        <option value="HOME">Дом</option>
+                        <option value="HEALTH">Здоровье</option>
+                        <option value="SPORT">Спорт</option>
+                        <option value="OFFICE">Офис</option>
+                        <option value="OTHER">Другое</option>
+                    </select>
+                </div>
+
                 <div class="filters-actions">
                     <button type="submit" class="btn primary full-width">
                         Применить
@@ -114,6 +137,7 @@
             </div>
 
             <div id="productsGrid" class="products-grid">
+                <!-- skeletons / products -->
             </div>
         </section>
     </section>
@@ -124,3 +148,5 @@
 <script src="home.js"></script>
 </body>
 </html>
+
+
