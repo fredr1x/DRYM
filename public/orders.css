@@ -1,0 +1,223 @@
+.orders-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 88px 16px 24px;
+}
+
+.orders-header {
+    margin-bottom: 24px;
+}
+
+.orders-header h1 {
+    margin: 0 0 8px;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.orders-empty {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.orders-empty svg {
+    width: 80px;
+    height: 80px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.orders-empty h2 {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    color: var(--text-main);
+}
+
+.orders-empty p {
+    margin: 0 0 24px;
+    color: var(--text-muted);
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.order-card {
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.order-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.order-id {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.order-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fff;
+}
+
+.order-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.order-body {
+    padding: 16px 20px;
+}
+
+.order-products {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.order-product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(248, 250, 252, 0.6);
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.order-product-info {
+    flex: 1;
+}
+
+.order-product-id {
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.order-product-qty {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.order-product-price {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.order-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.order-total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.order-total-label {
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-right: 8px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.order-btn {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(248, 250, 252, 0.9);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.order-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.order-btn.pay {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+}
+
+.order-btn.cancel {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+}
+
+.order-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.order-card.skeleton-card .skeleton-inner {
+    height: 200px;
+}
+
+@media (max-width: 768px) {
+    .orders-page {
+        padding-inline: 12px;
+    }
+
+    .order-header,
+    .order-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .order-actions {
+        width: 100%;
+    }
+
+    .order-btn {
+        flex: 1;
+    }
+}

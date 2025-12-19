@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мои заказы | Online Shopping</title>
+    <link rel="icon" href="resources/dreamfactory-svgrepo-com%20(1).svg" type="image/svg+xml">
+    <link rel="stylesheet" href="home.css" />
+    <link rel="stylesheet" href="orders.css" />
+</head>
+<body>
+<header class="app-header">
+    <div class="header-inner">
+        <a href="home.html" class="brand">
+            <img
+                    src="resources/dreamfactory-svgrepo-com%20(1).svg"
+                    alt="Logo"
+                    width="40"
+                    height="40"
+            />
+            <span class="brand-text">Online Shopping</span>
+        </a>
+
+        <nav class="nav-links" style="margin-left: auto;">
+            <button class="nav-link" onclick="window.location.href='home.html'">Главная</button>
+            <button class="nav-link" style="color: var(--primary-dark); font-weight: 500;">Мои заказы</button>
+            <button class="nav-link" onclick="window.location.href='profile.html'">Профиль</button>
+        </nav>
+    </div>
+</header>
+
+<main class="orders-page">
+    <div class="orders-header">
+        <h1>Мои заказы</h1>
+        <p class="muted">История ваших покупок и текущие заказы</p>
+    </div>
+
+    <div id="ordersContainer" class="orders-list">
+        <!-- Заказы будут загружены здесь -->
+    </div>
+
+    <div id="ordersEmpty" class="orders-empty" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 2C7.89543 2 7 2.89543 7 4V5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V7C20 5.89543 19.1046 5 18 5H17V4C17 2.89543 16.1046 2 15 2H9ZM9 4H15V6H9V4ZM6 7H18V19H6V7ZM9 9V11H15V9H9ZM9 13V15H13V13H9Z"/>
+        </svg>
+        <h2>У вас пока нет заказов</h2>
+        <p>Перейдите в каталог и добавьте товары в корзину</p>
+        <button class="btn primary" onclick="window.location.href='home.html'">
+            Перейти к покупкам
+        </button>
+    </div>
+</main>
+
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<script src="orders.js"></script>
+</body>
+</html>
