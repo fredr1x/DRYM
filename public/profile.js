@@ -381,8 +381,8 @@ function initForms() {
             return;
         }
 
-        const id = getUserId();
-        const payload = { id, amount };
+        const userId = getUserId();
+        const payload = { userId: userId, amount };
 
         rechargeForm.querySelector('button[type="submit"]').disabled = true;
         try {
