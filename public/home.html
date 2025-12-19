@@ -6,12 +6,6 @@
     <title>Маркетплейс | Главная</title>
     <link rel="icon" href="resources/dreamfactory-svgrepo-com%20(1).svg" type="image/svg+xml">
     <link rel="stylesheet" href="home.css" />
-    <link rel="stylesheet" href="cart.css" />
-    <script
-            src="https://code.jquery.com/jquery-3.7.1.min.js"
-            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-            crossorigin="anonymous"
-    ></script>
 </head>
 <body>
 <header class="app-header">
@@ -36,14 +30,7 @@
         </div>
 
         <nav class="nav-links">
-            <div class="cart-icon-wrapper">
-                <button class="nav-link cart-icon-btn" id="cartNavBtn" data-nav="cart" aria-label="Корзина">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                    </svg>
-                    <span class="cart-counter" id="cartCounter"></span>
-                </button>
-            </div>
+            <button class="nav-link" data-nav="cart" id="cartNavBtn">Корзина</button>
             <button class="nav-link" data-nav="favorites">Избранное</button>
             <button class="nav-link" data-nav="orders">Мои заказы</button>
             <button class="nav-link" data-nav="profile">Профиль</button>
@@ -134,41 +121,6 @@
 
 <div id="toast" class="toast" aria-live="polite"></div>
 
-<!-- Cart Modal -->
-<div id="cartModalBackdrop" class="cart-modal-backdrop"></div>
-<div id="cartModal" class="cart-modal" aria-hidden="true">
-    <div class="cart-modal-dialog">
-        <header class="cart-modal-header">
-            <h2>Корзина</h2>
-            <button class="cart-modal-close" id="cartModalClose" aria-label="Закрыть">
-                &times;
-            </button>
-        </header>
-        <div class="cart-modal-body">
-            <div id="cartEmptyState" class="cart-empty-state" style="display: none;">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.15.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                </svg>
-                <h3>Корзина пуста</h3>
-                <p>Добавьте товары, чтобы начать покупки</p>
-            </div>
-            <div id="cartItemsContainer" class="cart-items-container">
-                <!-- Cart items will be rendered here -->
-            </div>
-        </div>
-        <footer class="cart-modal-footer">
-            <div class="cart-total">
-                <span class="cart-total-label">Итого:</span>
-                <span class="cart-total-value" id="cartTotal">0.00 ₸</span>
-            </div>
-            <button class="cart-checkout-btn" id="cartCheckoutBtn" disabled>
-                Оформить заказ
-            </button>
-        </footer>
-    </div>
-</div>
-
-<script src="cart.js"></script>
 <script src="home.js"></script>
 </body>
 </html>
