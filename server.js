@@ -18,6 +18,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/resources/favicon.ico'));
+});
+
 app.listen(PORT, () => {
     console.log(`Frontend server running at http://localhost:${PORT}`);
 });

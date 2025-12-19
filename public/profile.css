@@ -1,9 +1,8 @@
-/* ===== CSS Variables & Base Styles ===== */
 :root {
-    --primary: hsl(200, 50%, 50%);
+    --primary: hsl(220, 50%, 50%);
     --primary-soft: hsla(200, 50%, 50%, 0.1);
     --primary-soft-2: hsla(200, 50%, 50%, 0.15);
-    --primary-dark: hsl(200, 50%, 35%);
+    --primary-dark: hsl(230, 50%, 35%);
     --bg: hsl(210, 20%, 98%);
     --bg-elevated: #ffffff;
     --border-subtle: hsl(210, 16%, 90%);
