@@ -2,6 +2,7 @@ const AUTH_API_BASE = 'http://localhost:8080/api/v1/auth';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
 const LS_REFRESH_TOKEN_KEY = 'oss_jwt_refresh';
 const LS_LAST_LOGIN_EMAIL = 'oss_last_login_email';
+const LS_USER_KEY = 'oss_user';
 
 function saveTokens({ accessToken, refreshToken }) {
     if (accessToken) {
@@ -9,6 +10,21 @@ function saveTokens({ accessToken, refreshToken }) {
     }
     if (refreshToken) {
         localStorage.setItem(LS_REFRESH_TOKEN_KEY, refreshToken);
+    }
+}
+
+function saveUserData(userData) {
+    try {
+        const user = {
+            id: userData.id,
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            balance: userData.balance,
+        };
+        localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
+    } catch (err) {
+        console.error('Ошибка сохранения данных пользователя:', err);
     }
 }
 
@@ -42,6 +58,8 @@ async function login(email, password) {
         accessToken: data.accessToken || data.token,
         refreshToken: data.refreshToken,
     });
+
+    saveUserData(data);
 
     return data;
 }
