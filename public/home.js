@@ -1,8 +1,12 @@
 const API_PRODUCTS_BASE = 'http://localhost:8080/api/v1/products';
+const API_WISHLIST_BASE = 'http://localhost:8080/api/v1/wish_lists';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
-const LS_FAVORITES_KEY = 'oss_favorites';
+const LS_PROFILE_KEY = 'oss_profile_user';
+const LS_WISHLIST_KEY = 'oss_wishlist';
+const DEFAULT_USER_ID = 1;
 
-let favoritesSet = new Set();
+let currentWishListId = null;
+let wishlistItems = new Map(); // productId -> wishListItemId
 let searchDebounceId = null;
 
 function getToken() {
@@ -18,6 +22,30 @@ function ensureAuth() {
     if (!token) {
         window.location.href = 'login.html';
     }
+}
+
+function getUserId() {
+    try {
+        const stored = localStorage.getItem(LS_PROFILE_KEY);
+        if (stored) {
+            const user = JSON.parse(stored);
+            if (user && user.id) return user.id;
+        }
+    } catch {}
+
+    const token = getToken();
+    if (token) {
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+            try {
+                const payloadJson = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+                const payload = JSON.parse(payloadJson);
+                if (payload.id) return payload.id;
+            } catch {}
+        }
+    }
+
+    return DEFAULT_USER_ID;
 }
 
 function getAuthHeaders(extra = {}) {
@@ -38,9 +66,7 @@ async function authorizedFetch(url, options = {}) {
     if (res.status === 401 || res.status === 403) {
         try {
             localStorage.removeItem(LS_ACCESS_TOKEN_KEY);
-        } catch {
-            // ignore
-        }
+        } catch {}
         window.location.href = 'login.html';
         throw new Error('Не авторизован');
     }
@@ -64,40 +90,145 @@ function showToast(message, type = 'success') {
     }, 2500);
 }
 
-// Favorites
-function loadFavorites() {
+// Wishlist API
+async function apiGetWishList(userId) {
+    const res = await authorizedFetch(`${API_WISHLIST_BASE}/${userId}`);
+    if (!res.ok) {
+        throw new Error('Не удалось загрузить избранное');
+    }
+    return res.json();
+}
+
+async function apiAddToWishList(payload) {
+    const headers = getAuthHeaders({ 'Content-Type': 'application/json' });
+    const res = await fetch(`${API_WISHLIST_BASE}/add_item`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+    });
+    if (res.status === 401 || res.status === 403) {
+        window.location.href = 'login.html';
+        throw new Error('Не авторизован');
+    }
+    if (!res.ok) {
+        throw new Error('Не удалось добавить в избранное');
+    }
+    return res.json();
+}
+
+async function apiRemoveFromWishList(payload) {
+    const headers = getAuthHeaders({ 'Content-Type': 'application/json' });
+    const res = await fetch(`${API_WISHLIST_BASE}/delete_item`, {
+        method: 'DELETE',
+        headers,
+        body: JSON.stringify(payload),
+    });
+    if (res.status === 401 || res.status === 403) {
+        window.location.href = 'login.html';
+        throw new Error('Не авторизован');
+    }
+    if (!res.ok) {
+        throw new Error('Не удалось удалить из избранного');
+    }
+    return res.json();
+}
+
+// Load wishlist
+async function loadWishList() {
+    const userId = getUserId();
     try {
-        const raw = localStorage.getItem(LS_FAVORITES_KEY);
-        if (!raw) {
-            favoritesSet = new Set();
-            return;
+        const wishlist = await apiGetWishList(userId);
+        currentWishListId = wishlist.id;
+
+        if (wishlist.items && Array.isArray(wishlist.items)) {
+            wishlistItems.clear();
+            wishlist.items.forEach(item => {
+                wishlistItems.set(item.product_id, item.id);
+            });
         }
-        const arr = JSON.parse(raw);
-        favoritesSet = new Set(Array.isArray(arr) ? arr : []);
-    } catch {
-        favoritesSet = new Set();
+
+        try {
+            localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify({
+                id: wishlist.id,
+                items: wishlist.items || []
+            }));
+        } catch {}
+    } catch (e) {
+        console.error('Ошибка загрузки wishlist:', e);
+        try {
+            const cached = localStorage.getItem(LS_WISHLIST_KEY);
+            if (cached) {
+                const data = JSON.parse(cached);
+                currentWishListId = data.id;
+                if (data.items) {
+                    wishlistItems.clear();
+                    data.items.forEach(item => {
+                        wishlistItems.set(item.product_id, item.id);
+                    });
+                }
+            }
+        } catch {}
     }
 }
 
-function saveFavorites() {
-    try {
-        localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify([...favoritesSet]));
-    } catch {
-        // ignore
-    }
+function isInWishList(productId) {
+    return wishlistItems.has(productId);
 }
 
-function isFavorite(id) {
-    return favoritesSet.has(id);
-}
+async function toggleWishList(productId) {
+    if (isInWishList(productId)) {
+        const wishListItemId = wishlistItems.get(productId);
+        try {
+            await apiRemoveFromWishList({
+                wishListId: currentWishListId,
+                wishListItemId: wishListItemId
+            });
+            wishlistItems.delete(productId);
 
-function toggleFavorite(id) {
-    if (favoritesSet.has(id)) {
-        favoritesSet.delete(id);
+            try {
+                const cached = localStorage.getItem(LS_WISHLIST_KEY);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    data.items = data.items.filter(item => item.product_id !== productId);
+                    localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify(data));
+                }
+            } catch {}
+
+            return false;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     } else {
-        favoritesSet.add(id);
+        try {
+            const result = await apiAddToWishList({
+                id: 0,
+                wishListId: currentWishListId || 0,
+                productId: productId
+            });
+
+            if (result.id) {
+                wishlistItems.set(productId, result.id);
+            }
+
+            if (result.wishListId) {
+                currentWishListId = result.wishListId;
+            }
+
+            try {
+                const cached = localStorage.getItem(LS_WISHLIST_KEY);
+                const data = cached ? JSON.parse(cached) : { id: currentWishListId, items: [] };
+                data.id = currentWishListId;
+                data.items.push({ id: result.id, product_id: productId });
+                localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify(data));
+            } catch {}
+
+            return true;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     }
-    saveFavorites();
 }
 
 // Load product image with JWT
@@ -228,12 +359,21 @@ function renderProductsGrid(products) {
 
         const favBtn = document.createElement('button');
         favBtn.className = 'fav-btn';
-        if (isFavorite(p.id)) favBtn.classList.add('active');
+        if (isInWishList(p.id)) favBtn.classList.add('active');
         favBtn.innerHTML =
             '<svg class="fav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.001 4.529c2.349-2.532 6.379-2.532 8.727 0 2.348 2.531 2.348 6.643 0 9.174l-6.939 7.483a1.25 1.25 0 0 1-1.776 0l-6.94-7.483c-2.347-2.531-2.347-6.643 0-9.174 2.35-2.532 6.38-2.532 8.728 0z"/></svg>';
-        favBtn.addEventListener('click', () => {
-            toggleFavorite(p.id);
-            favBtn.classList.toggle('active', isFavorite(p.id));
+        favBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            favBtn.disabled = true;
+            try {
+                const isAdded = await toggleWishList(p.id);
+                favBtn.classList.toggle('active', isInWishList(p.id));
+                showToast(isAdded ? 'Добавлено в избранное' : 'Удалено из избранного');
+            } catch (err) {
+                showToast('Ошибка обновления избранного', 'error');
+            } finally {
+                favBtn.disabled = false;
+            }
         });
 
         const body = document.createElement('div');
@@ -269,7 +409,6 @@ function renderProductsGrid(products) {
 
         card.append(imgWrap, favBtn, body);
 
-        // Клик на карточку (кроме кнопки избранного)
         card.addEventListener('click', (e) => {
             if (e.target.closest('.fav-btn')) return;
             window.location.href = `product.html?id=${p.id}`;
@@ -345,7 +484,6 @@ function initSearch() {
         }
         searchDebounceId = setTimeout(async () => {
             if (!value) {
-                // если поиск пустой, можно просто не перетирать текущий список
                 return;
             }
             try {
@@ -456,7 +594,7 @@ function initNav() {
 
 async function initPage() {
     ensureAuth();
-    loadFavorites();
+    await loadWishList();
     initHeaderScrollShadow();
     initNav();
     initSearch();

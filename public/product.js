@@ -1,12 +1,13 @@
 const API_BASE = 'http://localhost:8080/api/v1';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
 const LS_PROFILE_KEY = 'oss_profile_user';
-const LS_FAVORITES_KEY = 'oss_favorites';
+const LS_WISHLIST_KEY = 'oss_wishlist';
 const DEFAULT_USER_ID = 1;
 
 let currentProduct = null;
 let currentProductId = null;
-let favoritesSet = new Set();
+let currentWishListId = null;
+let wishlistItems = new Map(); // productId -> wishListItemId
 
 // Auth helpers
 function getToken() {
@@ -92,41 +93,147 @@ function showToast(message, type = 'success') {
     }, 2500);
 }
 
-// Favorites
-function loadFavorites() {
+// Wishlist API
+async function apiGetWishList(userId) {
+    const res = await authorizedFetch(`${API_BASE}/wish_lists/${userId}`);
+    if (!res.ok) {
+        throw new Error('Не удалось загрузить избранное');
+    }
+    return res.json();
+}
+
+async function apiAddToWishList(payload) {
+    const res = await authorizedFetch(`${API_BASE}/wish_lists/add_item`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        throw new Error('Не удалось добавить в избранное');
+    }
+    return res.json();
+}
+
+async function apiRemoveFromWishList(payload) {
+    const res = await authorizedFetch(`${API_BASE}/wish_lists/delete_item`, {
+        method: 'DELETE',
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        throw new Error('Не удалось удалить из избранного');
+    }
+    return res.json();
+}
+
+// Load wishlist
+async function loadWishList() {
+    const userId = getUserId();
     try {
-        const raw = localStorage.getItem(LS_FAVORITES_KEY);
-        if (!raw) {
-            favoritesSet = new Set();
-            return;
+        const wishlist = await apiGetWishList(userId);
+        currentWishListId = wishlist.id;
+
+        // Store items mapping
+        if (wishlist.items && Array.isArray(wishlist.items)) {
+            wishlistItems.clear();
+            wishlist.items.forEach(item => {
+                wishlistItems.set(item.product_id, item.id);
+            });
         }
-        const arr = JSON.parse(raw);
-        favoritesSet = new Set(Array.isArray(arr) ? arr : []);
-    } catch {
-        favoritesSet = new Set();
+
+        // Cache in localStorage
+        try {
+            localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify({
+                id: wishlist.id,
+                items: wishlist.items || []
+            }));
+        } catch {}
+    } catch (e) {
+        console.error('Ошибка загрузки wishlist:', e);
+        // Try to load from cache
+        try {
+            const cached = localStorage.getItem(LS_WISHLIST_KEY);
+            if (cached) {
+                const data = JSON.parse(cached);
+                currentWishListId = data.id;
+                if (data.items) {
+                    wishlistItems.clear();
+                    data.items.forEach(item => {
+                        wishlistItems.set(item.product_id, item.id);
+                    });
+                }
+            }
+        } catch {}
     }
 }
 
-function saveFavorites() {
-    try {
-        localStorage.setItem(LS_FAVORITES_KEY, JSON.stringify([...favoritesSet]));
-    } catch {}
+function isInWishList(productId) {
+    return wishlistItems.has(productId);
 }
 
-function isFavorite(id) {
-    return favoritesSet.has(id);
-}
+async function toggleWishList(productId) {
+    const userId = getUserId();
 
-function toggleFavorite(id) {
-    if (favoritesSet.has(id)) {
-        favoritesSet.delete(id);
+    if (isInWishList(productId)) {
+        // Remove from wishlist
+        const wishListItemId = wishlistItems.get(productId);
+        try {
+            await apiRemoveFromWishList({
+                wishListId: currentWishListId,
+                wishListItemId: wishListItemId
+            });
+            wishlistItems.delete(productId);
+
+            // Update cache
+            try {
+                const cached = localStorage.getItem(LS_WISHLIST_KEY);
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    data.items = data.items.filter(item => item.product_id !== productId);
+                    localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify(data));
+                }
+            } catch {}
+
+            return false;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     } else {
-        favoritesSet.add(id);
+        // Add to wishlist
+        try {
+            const result = await apiAddToWishList({
+                id: 0,
+                wishListId: currentWishListId || 0,
+                productId: productId
+            });
+
+            // Update local state with returned item ID
+            if (result.id) {
+                wishlistItems.set(productId, result.id);
+            }
+
+            // Update wishListId if it was created
+            if (result.wishListId) {
+                currentWishListId = result.wishListId;
+            }
+
+            // Update cache
+            try {
+                const cached = localStorage.getItem(LS_WISHLIST_KEY);
+                const data = cached ? JSON.parse(cached) : { id: currentWishListId, items: [] };
+                data.id = currentWishListId;
+                data.items.push({ id: result.id, product_id: productId });
+                localStorage.setItem(LS_WISHLIST_KEY, JSON.stringify(data));
+            } catch {}
+
+            return true;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     }
-    saveFavorites();
 }
 
-// API
+// Other API methods
 async function apiGetProduct(productId) {
     const res = await authorizedFetch(`${API_BASE}/products/${encodeURIComponent(productId)}`);
     if (!res.ok) {
@@ -221,12 +328,19 @@ function renderProduct(product) {
 
     const favBtn = document.createElement('button');
     favBtn.className = 'fav-btn-large';
-    if (isFavorite(product.id)) favBtn.classList.add('active');
+    if (isInWishList(product.id)) favBtn.classList.add('active');
     favBtn.innerHTML = '<svg class="fav-icon" viewBox="0 0 24 24"><path d="M12.001 4.529c2.349-2.532 6.379-2.532 8.727 0 2.348 2.531 2.348 6.643 0 9.174l-6.939 7.483a1.25 1.25 0 0 1-1.776 0l-6.94-7.483c-2.347-2.531-2.347-6.643 0-9.174 2.35-2.532 6.38-2.532 8.728 0z"/></svg>';
-    favBtn.addEventListener('click', () => {
-        toggleFavorite(product.id);
-        favBtn.classList.toggle('active', isFavorite(product.id));
-        showToast(isFavorite(product.id) ? 'Добавлено в избранное' : 'Удалено из избранного');
+    favBtn.addEventListener('click', async () => {
+        favBtn.disabled = true;
+        try {
+            const isAdded = await toggleWishList(product.id);
+            favBtn.classList.toggle('active', isInWishList(product.id));
+            showToast(isAdded ? 'Добавлено в избранное' : 'Удалено из избранного');
+        } catch (e) {
+            showToast('Ошибка обновления избранного', 'error');
+        } finally {
+            favBtn.disabled = false;
+        }
     });
 
     imageSection.append(img, favBtn);
@@ -308,18 +422,15 @@ function renderReviews(reviewsData) {
 
     reviewsSection.classList.remove('hidden');
 
-    // Проверяем структуру данных - может быть объект с полями или массив
     let reviews = [];
     let overallRating = 0;
     let numberOfReviews = 0;
 
     if (reviewsData) {
         if (Array.isArray(reviewsData)) {
-            // Если пришёл просто массив
             reviews = reviewsData;
             numberOfReviews = reviews.length;
         } else if (reviewsData.reviews && Array.isArray(reviewsData.reviews)) {
-            // Если объект с полем reviews
             reviews = reviewsData.reviews;
             overallRating = reviewsData.overallRating || 0;
             numberOfReviews = reviewsData.numberOfReviews || reviews.length;
@@ -390,13 +501,10 @@ async function handleAddToCart() {
     if (addToCartBtn) addToCartBtn.disabled = true;
 
     try {
-        // Get cart
         let cartData;
         try {
             cartData = await apiGetCart(userId);
-        } catch {
-            // Cart might not exist yet
-        }
+        } catch {}
 
         const cartId = cartData?.id || 0;
 
@@ -432,7 +540,6 @@ function initReviewForm() {
             const rating = btn.dataset.rating;
             ratingValue.value = rating;
 
-            // Update UI
             starsInput.querySelectorAll('.star-btn').forEach((star, idx) => {
                 if (idx < Number(rating)) {
                     star.classList.add('active');
@@ -472,7 +579,6 @@ function initReviewForm() {
                 form.reset();
                 starsInput?.querySelectorAll('.star-btn').forEach((s) => s.classList.remove('active'));
 
-                // Reload reviews
                 const reviews = await apiGetReviews(currentProductId);
                 renderReviews(reviews);
             } catch (e) {
@@ -528,13 +634,11 @@ async function loadProductPage() {
         const product = await apiGetProduct(productId);
         renderProduct(product);
 
-        // Load reviews
         try {
             const reviews = await apiGetReviews(productId);
             renderReviews(reviews);
         } catch (e) {
             console.error('Ошибка загрузки отзывов', e);
-            // Don't fail the whole page if reviews fail
             const reviewsSection = document.getElementById('reviewsSection');
             if (reviewsSection) reviewsSection.classList.remove('hidden');
         }
@@ -550,7 +654,7 @@ async function loadProductPage() {
 // Init
 async function init() {
     ensureAuth();
-    loadFavorites();
+    await loadWishList();
     initHeaderScrollShadow();
     initBackButton();
     initReviewForm();

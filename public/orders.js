@@ -3,7 +3,6 @@ const API_ORDERS_BASE = 'http://localhost:8080/api/v1/orders';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
 const LS_USER_KEY = 'oss_user';
 
-// Утилиты для работы с токеном и авторизацией
 function getToken() {
     try {
         return localStorage.getItem(LS_ACCESS_TOKEN_KEY);
@@ -70,7 +69,6 @@ function showToast(message, type = 'success') {
     }, 2500);
 }
 
-// Константы для статусов заказов
 const ORDER_STATUS_LABELS = {
     PENDING: 'Ожидает оплаты',
     PAID: 'Оплачен',
@@ -198,7 +196,6 @@ function renderOrders(orders) {
         const card = document.createElement('article');
         card.className = 'order-card';
 
-        // Header заказа
         const header = document.createElement('div');
         header.className = 'order-header';
 
@@ -213,7 +210,6 @@ function renderOrders(orders) {
 
         header.append(orderId, status);
 
-        // Body заказа
         const body = document.createElement('div');
         body.className = 'order-body';
 
@@ -249,7 +245,6 @@ function renderOrders(orders) {
 
         body.appendChild(productsContainer);
 
-        // Footer заказа
         const footer = document.createElement('div');
         footer.className = 'order-footer';
 
@@ -261,7 +256,6 @@ function renderOrders(orders) {
         const actions = document.createElement('div');
         actions.className = 'order-actions';
 
-        // Кнопка оплаты (только для PENDING)
         if (order.orderStatus === 'PENDING') {
             const payBtn = document.createElement('button');
             payBtn.className = 'order-btn pay';
@@ -270,7 +264,6 @@ function renderOrders(orders) {
             actions.appendChild(payBtn);
         }
 
-        // Кнопка отмены (только для PENDING и PAID)
         if (order.orderStatus === 'PENDING' || order.orderStatus === 'PAID') {
             const cancelBtn = document.createElement('button');
             cancelBtn.className = 'order-btn cancel';

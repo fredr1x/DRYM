@@ -2,8 +2,6 @@
 const API_BASE = 'http://localhost:8080/api/v1/users';
 const LOCAL_STORAGE_KEY = 'oss_profile_user';
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
-const LS_REFRESH_TOKEN_KEY = 'oss_jwt_refresh';
-// Fallback demo user id if ничего не сохранено
 const DEFAULT_USER_ID = 1;
 
 // Cached user state
@@ -65,7 +63,6 @@ function closeModal(modalId) {
         .fadeOut(160, () => {
             modal.classList.remove('visible');
 
-            // Проверяем после того, как текущая модалка спрятана
             const anyOpen = Array.from(document.querySelectorAll('.modal')).some(
                 (m) => m.classList.contains('visible')
             );
@@ -207,13 +204,11 @@ function renderUser(user) {
 }
 
 function userHasModeratorRole() {
-    // 1) пробуем взять роли из сохранённого пользователя
     const stored = getStoredUser();
     if (stored && Array.isArray(stored.roles)) {
         if (stored.roles.includes('ROLE_MODERATOR')) return true;
     }
 
-    // 2) пробуем декодировать JWT и вытащить роли из payload
     const token = getAccessToken();
     if (!token) return false;
     const parts = token.split('.');
@@ -278,7 +273,6 @@ function initModals() {
     const moderatorBtn = document.getElementById('moderatorPanelBtn');
 
     updateProfileBtn?.addEventListener('click', () => {
-        // префилл полей из currentUser
         if (currentUser) {
             const first = document.getElementById('modalFirstName');
             const last = document.getElementById('modalLastName');
@@ -308,7 +302,6 @@ function initModals() {
         window.location.href = 'moderator.html';
     });
 
-    // Close buttons
     document.querySelectorAll('[data-modal-close]').forEach((btn) => {
         btn.addEventListener('click', () => {
             const modal = btn.closest('.modal');
@@ -316,7 +309,6 @@ function initModals() {
         });
     });
 
-    // Click on backdrop closes all modals
     const backdrop = document.getElementById('modalBackdrop');
     if (backdrop) {
         backdrop.addEventListener('click', () => {
@@ -324,7 +316,6 @@ function initModals() {
         });
     }
 
-    // Esc key closes
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeAllModals();

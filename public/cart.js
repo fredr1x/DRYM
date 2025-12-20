@@ -52,7 +52,6 @@ async function authorizedFetch(url, options = {}) {
 
 // User ID
 async function getUserId() {
-    // Пытаемся получить из localStorage
     try {
         const stored = localStorage.getItem(LS_PROFILE_KEY);
         if (stored) {
@@ -74,8 +73,6 @@ async function getUserId() {
         }
     }
 
-    // Если не получили - запрашиваем у backend (нужен отдельный endpoint /me или подобный)
-    // Для демо используем fallback
     return 1;
 }
 
@@ -356,10 +353,6 @@ async function handleIncrement(item) {
 
 async function handleDecrement(item) {
     if (item.quantity <= 1) return;
-    // Уменьшение - это удаление одного экземпляра
-    // Но API delete_item удаляет всю позицию
-    // Для уменьшения нужно либо отдельный endpoint, либо add с отрицательным quantity
-    // Так как его нет в спецификации, просто блокируем кнопку при quantity = 1
     showToast('Используйте кнопку "Удалить" для удаления товара', 'error');
 }
 
@@ -437,14 +430,11 @@ async function loadCart() {
     try {
         const userId = await getUserId();
 
-        // Получаем корзину
         cartData = await apiGetCart(userId);
 
-        // Получаем товары в корзине
         const items = await apiGetCartItems(userId);
         cartItems = Array.isArray(items) ? items : [];
 
-        // Загружаем данные о товарах
         productsData.clear();
         const productPromises = cartItems.map(async (item) => {
             try {
@@ -457,7 +447,6 @@ async function loadCart() {
 
         await Promise.all(productPromises);
 
-        // Рендерим
         renderCartItems();
 
     } catch (e) {
