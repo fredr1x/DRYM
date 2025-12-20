@@ -121,10 +121,11 @@
     flex: 1;
 }
 
-.order-product-id {
-    font-weight: 500;
+.order-product-name {
+    font-weight: 600;
     color: var(--text-main);
     margin-bottom: 4px;
+    font-size: 0.95rem;
 }
 
 .order-product-qty {
@@ -135,6 +136,8 @@
 .order-product-price {
     font-weight: 600;
     color: var(--primary-dark);
+    white-space: nowrap;
+    margin-left: 12px;
 }
 
 .order-footer {

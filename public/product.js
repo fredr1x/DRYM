@@ -149,7 +149,7 @@ async function loadProductImage(productId, imgElement) {
 }
 
 async function apiGetReviews(productId) {
-    const res = await authorizedFetch(`${API_BASE}/reviews/product/${encodeURIComponent(productId)}`);
+    const res = await authorizedFetch(`${API_BASE}/reviews/${encodeURIComponent(productId)}`);
     if (!res.ok) {
         throw new Error('Не удалось загрузить отзывы');
     }
@@ -157,7 +157,7 @@ async function apiGetReviews(productId) {
 }
 
 async function apiAddReview(payload) {
-    const res = await authorizedFetch(`${API_BASE}/reviews`, {
+    const res = await authorizedFetch(`${API_BASE}/reviews/make_review`, {
         method: 'POST',
         body: JSON.stringify(payload),
     });
@@ -299,7 +299,7 @@ function renderProduct(product) {
 }
 
 // Reviews
-function renderReviews(reviews) {
+function renderReviews(reviewsData) {
     const reviewsSection = document.getElementById('reviewsSection');
     const reviewsList = document.getElementById('reviewsList');
     const reviewsOverview = document.getElementById('reviewsOverview');
@@ -308,14 +308,33 @@ function renderReviews(reviews) {
 
     reviewsSection.classList.remove('hidden');
 
+    // Проверяем структуру данных - может быть объект с полями или массив
+    let reviews = [];
+    let overallRating = 0;
+    let numberOfReviews = 0;
+
+    if (reviewsData) {
+        if (Array.isArray(reviewsData)) {
+            // Если пришёл просто массив
+            reviews = reviewsData;
+            numberOfReviews = reviews.length;
+        } else if (reviewsData.reviews && Array.isArray(reviewsData.reviews)) {
+            // Если объект с полем reviews
+            reviews = reviewsData.reviews;
+            overallRating = reviewsData.overallRating || 0;
+            numberOfReviews = reviewsData.numberOfReviews || reviews.length;
+        }
+    }
+
     // Overview
-    if (reviews && reviews.length > 0) {
-        const avgRating = (
+    if (numberOfReviews > 0) {
+        const displayRating = overallRating > 0 ? overallRating.toFixed(1) : (
             reviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviews.length
         ).toFixed(1);
+
         reviewsOverview.innerHTML = `
-            <div class="reviews-overview-rating">★ ${avgRating}</div>
-            <div class="reviews-overview-count">(${reviews.length} отзывов)</div>
+            <div class="reviews-overview-rating">★ ${displayRating}</div>
+            <div class="reviews-overview-count">(${numberOfReviews} ${numberOfReviews === 1 ? 'отзыв' : 'отзывов'})</div>
         `;
     } else {
         reviewsOverview.innerHTML = '<div class="reviews-overview-count">Нет отзывов</div>';

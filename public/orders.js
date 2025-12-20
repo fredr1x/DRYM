@@ -1,4 +1,5 @@
 const API_ORDERS_BASE = 'http://localhost:8080/api/v1/orders';
+
 const LS_ACCESS_TOKEN_KEY = 'oss_jwt_access';
 const LS_USER_KEY = 'oss_user';
 
@@ -89,7 +90,6 @@ const ORDER_STATUS_COLORS = {
 };
 
 // API методы
-
 async function getUserOrders(userId) {
     const res = await authorizedFetch(`${API_ORDERS_BASE}/user/${userId}`);
     if (!res.ok) {
@@ -123,7 +123,6 @@ async function cancelOrder(orderId, userId) {
 }
 
 // UI функции
-
 function createOrderSkeleton() {
     const sk = document.createElement('div');
     sk.className = 'order-card skeleton-card';
@@ -164,7 +163,7 @@ async function handleCancelOrder(orderId, userId) {
     if (!confirm('Вы уверены, что хотите отменить этот заказ?')) {
         return;
     }
-    
+
     try {
         await cancelOrder(orderId, userId);
         showToast('Заказ успешно отменён');
@@ -178,90 +177,90 @@ async function handleCancelOrder(orderId, userId) {
 function renderOrders(orders) {
     const container = document.getElementById('ordersContainer');
     const emptyState = document.getElementById('ordersEmpty');
-    
+
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (!orders || orders.length === 0) {
         container.style.display = 'none';
         if (emptyState) emptyState.style.display = 'block';
         return;
     }
-    
+
     container.style.display = 'flex';
     if (emptyState) emptyState.style.display = 'none';
-    
+
     const user = getUserData();
     const userId = user?.id || 0;
-    
+
     orders.forEach(order => {
         const card = document.createElement('article');
         card.className = 'order-card';
-        
+
         // Header заказа
         const header = document.createElement('div');
         header.className = 'order-header';
-        
+
         const orderId = document.createElement('div');
         orderId.className = 'order-id';
         orderId.textContent = `Заказ #${order.id}`;
-        
+
         const status = document.createElement('span');
         status.className = 'order-status';
         status.textContent = ORDER_STATUS_LABELS[order.orderStatus] || order.orderStatus;
         status.style.background = ORDER_STATUS_COLORS[order.orderStatus] || '#6b7280';
-        
+
         header.append(orderId, status);
-        
+
         // Body заказа
         const body = document.createElement('div');
         body.className = 'order-body';
-        
+
         const productsContainer = document.createElement('div');
         productsContainer.className = 'order-products';
-        
+
         if (order.products && order.products.length > 0) {
             order.products.forEach(product => {
                 const item = document.createElement('div');
                 item.className = 'order-product-item';
-                
+
                 const info = document.createElement('div');
                 info.className = 'order-product-info';
-                
-                const productId = document.createElement('div');
-                productId.className = 'order-product-id';
-                productId.textContent = `Товар ID: ${product.productId}`;
-                
+
+                const productName = document.createElement('div');
+                productName.className = 'order-product-name';
+                productName.textContent = product.productName || `Товар #${product.productId}`;
+
                 const qty = document.createElement('div');
                 qty.className = 'order-product-qty';
                 qty.textContent = `Количество: ${product.quantity} шт.`;
-                
-                info.append(productId, qty);
-                
+
+                info.append(productName, qty);
+
                 const price = document.createElement('div');
                 price.className = 'order-product-price';
                 price.textContent = `${(product.productPrice * product.quantity).toFixed(2)} ₸`;
-                
+
                 item.append(info, price);
                 productsContainer.appendChild(item);
             });
         }
-        
+
         body.appendChild(productsContainer);
-        
+
         // Footer заказа
         const footer = document.createElement('div');
         footer.className = 'order-footer';
-        
+
         const total = document.createElement('div');
         total.className = 'order-total';
         const totalAmount = calculateOrderTotal(order.products);
         total.innerHTML = `<span class="order-total-label">Итого:</span>${totalAmount.toFixed(2)} ₸`;
-        
+
         const actions = document.createElement('div');
         actions.className = 'order-actions';
-        
+
         // Кнопка оплаты (только для PENDING)
         if (order.orderStatus === 'PENDING') {
             const payBtn = document.createElement('button');
@@ -270,7 +269,7 @@ function renderOrders(orders) {
             payBtn.addEventListener('click', () => handlePayOrder(order.id, userId));
             actions.appendChild(payBtn);
         }
-        
+
         // Кнопка отмены (только для PENDING и PAID)
         if (order.orderStatus === 'PENDING' || order.orderStatus === 'PAID') {
             const cancelBtn = document.createElement('button');
@@ -279,9 +278,9 @@ function renderOrders(orders) {
             cancelBtn.addEventListener('click', () => handleCancelOrder(order.id, userId));
             actions.appendChild(cancelBtn);
         }
-        
+
         footer.append(total, actions);
-        
+
         card.append(header, body, footer);
         container.appendChild(card);
     });
@@ -289,12 +288,12 @@ function renderOrders(orders) {
 
 async function loadOrders() {
     const user = getUserData();
-    
+
     if (!user || !user.id) {
         showToast('Не удалось определить пользователя', 'error');
         return;
     }
-    
+
     try {
         renderOrdersSkeletons();
         const orders = await getUserOrders(user.id);
